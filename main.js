@@ -6,48 +6,78 @@
 // @author       wanyujun
 // @match        https://degree.qingshuxuetang.com/gd/Student/Course/CourseShow*
 // @icon         https://degree.qingshuxuetang.com/resources/default/images/favicon.ico
-// @grant        none
+// @grant        GM_notification
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_listValues
+// @grant        GM_deleteValue
 // @license      MIT
 // @noframes
 // ==/UserScript==
 
+
 (function() {
     'use strict';
-    //延迟播放时间（单位：秒），网速慢的情况可以适当加大该值
-    let delay = 10
     setTimeout(() => {
-        let player = document.getElementById('vjs_video_3_html5_api')
-        if (player) {
-            console.log("找到视频组件了，准备开始播放视频")
+        let playerList = document.getElementsByTagName('video')
+        if (playerList.length > 0) {
+            let [player] = playerList
+            GM_setValue(utils.getTryKey(), 5)
+            utils.notify("找到视频组件了，准备开始播放视频")
             player.addEventListener("ended", function() {
-                console.log("视频播放完毕，即将跳转到下一条视频");
+                utils.notify("视频播放完毕，即将跳转到下一小节")
                 //生成下一节视频NodeId
                 let nodeId = utils.getUrlParam('nodeId')
                 let nextUrl = utils.getNextUrl(nodeId)
-                window.location.href = nextUrl
+                setTimeout(() => { window.location.href = nextUrl }, 5000)
             })
+            player.muted = true
             player.play()
         } else {
-            console.log("找不到视频组件，尝试跳转到下一章")
-            let nodeId = utils.getUrlParam('nodeId')
-            let nextUrl = utils.getNextUrl(nodeId, true)
-            window.location.href = nextUrl
+            let isChapter = false
+            let arr = utils.getUrlParam('nodeId').split('_')
+            let nextId = 0
+            if (arr.length > 2) nextId = arr.pop()
+            let nodeId = arr.join('_')
+            if (utils.isKeepTry()) {
+                utils.notify("找不到视频组件，尝试跳转到下一小节")
+                nodeId += `_${nextId}`
+            } else {
+                GM_deleteValue(utils.getTryKey())
+                isChapter = true
+                utils.notify("找不到视频组件，尝试跳转到下一章")
+            }
+            console.log(nodeId)
+            let nextUrl = utils.getNextUrl(nodeId, isChapter)
+            console.log(nextUrl)
+            setTimeout(() => { window.location.href = nextUrl }, 5000)
         }
-    }, delay * 1000);
-})();
-
+    }, 5 * 1000);
+})()
 
 const utils = {
 
     //生成下一个视频的地址
     getNextUrl(s, isChapter = false) {
-        let [ , chapter, node] = s.split('_')
-        node++
-        if (isChapter) {
-            chapter++
-            node = 1
+        let nodeId = 'kcjs_'
+        let arr = s.split('_')
+        if (arr.length == 2) {
+            nodeId += `${++arr[1]}`
+        } else {
+            let [ , chapter, node] = arr
+            node++
+            if (isChapter) {
+                chapter++
+            }
+            nodeId += chapter + '_' + node
         }
-        return window.location.href.replace(/kcjs_\d{1,2}_\d{1,2}/, `kcjs_${chapter}_${node}`)
+
+        let regexp = /kcjs_\d{1,2}/
+        if (utils.getUrlParam('nodeId').split('_').length > 2) {
+            regexp = /kcjs_\d{1,2}_\d{1,2}/
+        }
+
+        return window.location.href.replace(regexp, nodeId)
     },
 
     //获取地址栏指定参数
@@ -59,6 +89,38 @@ const utils = {
         } else {
             return "";
         }
+    },
+
+    //弹出通知
+    notify(content) {
+        console.log(content)
+        GM_notification({
+            title: '系统通知',
+            text: content,
+            timeout: 2000
+        })
+
+    },
+
+    getTryKey() {
+        let planId   = utils.getUrlParam('teachPlanId')
+        let periodId = utils.getUrlParam('periodId')
+        let courseId = utils.getUrlParam('courseId')
+        let nodeId   = utils.getUrlParam('nodeId')
+        let [, chapter] = nodeId.split('_')
+        let key  = `${planId}_${periodId}_${courseId}_kcjs_${chapter}`
+    },
+
+    //判断是否继续尝试
+    isKeepTry() {
+        let key = utils.getTryKey()
+        let tryCount = GM_getValue(key, 0)
+        console.log("tryCount = " + tryCount)
+        if (tryCount < 5) {
+            GM_setValue(key, ++tryCount)
+            return true
+        }
+        return false
     },
 
 
