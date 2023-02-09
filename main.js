@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         青书自动刷视频脚本
 // @namespace    https://b.huiwe.cn
-// @version      1.1
+// @version      1.2
 // @description  青书自动刷视频脚本，实现自动播放、自动切换章节、自动跳转下一小节。
 // @author       wanyujun
 // @match        https://degree.qingshuxuetang.com/gd/Student/Course/CourseShow*
