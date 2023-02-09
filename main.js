@@ -9,10 +9,13 @@
 // @grant        none
 // @noframes
 // ==/UserScript==
-//延迟播放时间（单位：秒），网速慢的情况可以适当加大该值
-let delay = 10
+
 (function() {
     'use strict';
+    
+    //延迟播放时间（单位：秒），网速慢的情况可以适当加大该值
+    let delay = 10
+    
     setTimeout(() => {
         let player = document.getElementById('vjs_video_3_html5_api')
         if (player) {
