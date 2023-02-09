@@ -12,10 +12,8 @@
 
 (function() {
     'use strict';
-    
     //延迟播放时间（单位：秒），网速慢的情况可以适当加大该值
     let delay = 10
-    
     setTimeout(() => {
         let player = document.getElementById('vjs_video_3_html5_api')
         if (player) {
@@ -29,15 +27,10 @@
             })
             player.play()
         } else {
-            let title = document.getElementsByClassName('learn-title')[0].innerHTML
-            if (title == '课程设计') {
-                console.log("课程学习完毕")
-            } else {
-                console.log("找不到视频组件，尝试跳转到下一章")
-                let nodeId = utils.getUrlParam('nodeId')
-                let nextUrl = utils.getNextUrl(nodeId, true)
-                window.location.href = nextUrl
-            }
+            console.log("找不到视频组件，尝试跳转到下一章")
+            let nodeId = utils.getUrlParam('nodeId')
+            let nextUrl = utils.getNextUrl(nodeId, true)
+            window.location.href = nextUrl
         }
     }, delay * 1000);
 })();
