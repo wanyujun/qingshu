@@ -9,7 +9,8 @@
 // @grant        none
 // @noframes
 // ==/UserScript==
-
+//延迟播放时间（单位：秒），网速慢的情况可以适当加大该值
+const delay = 10
 (function() {
     'use strict';
     setTimeout(() => {
@@ -35,7 +36,7 @@
                 window.location.href = nextUrl
             }
         }
-    }, 5000);
+    }, delay * 1000);
 })();
 
 
