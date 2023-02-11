@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         青书自动刷视频脚本
 // @namespace    https://b.huiwe.cn
-// @version      1.2
+// @version      1.2.1
 // @description  青书自动刷视频脚本，实现自动播放、自动切换章节、自动跳转下一小节。
 // @author       wanyujun
 // @match        https://degree.qingshuxuetang.com/gd/Student/Course/CourseShow*
@@ -19,9 +19,9 @@
 (function() {
     'use strict';
     setTimeout(() => {
-        let playerList = document.getElementsByTagName('video')
-        if (playerList.length > 0) {
-            let [player] = playerList
+        let el = $('video')
+        if (el.get(0) && el.attr('src')) {
+            let player = el.get(0)
             GM_setValue(utils.getTryKey(), 5)
             utils.notify("找到视频组件了，准备开始播放视频")
             player.addEventListener("ended", function() {
@@ -47,7 +47,6 @@
                 isChapter = true
                 utils.notify("找不到视频组件，尝试跳转到下一章")
             }
-            console.log(nodeId)
             let nextUrl = utils.getNextUrl(nodeId, isChapter)
             console.log(nextUrl)
             setTimeout(() => { window.location.href = nextUrl }, 5000)
@@ -59,12 +58,13 @@ const utils = {
 
     //生成下一个视频的地址
     getNextUrl(s, isChapter = false) {
-        let nodeId = 'kcjs_'
         let arr = s.split('_')
+        let [prefixStr, chapter] = arr
+        let nodeId = prefixStr + '_'
         if (arr.length == 2) {
-            nodeId += `${++arr[1]}`
+            nodeId += `${++chapter}`
         } else {
-            let [ , chapter, node] = arr
+            let [ , , node] = arr
             node++
             if (isChapter) {
                 chapter++
@@ -72,9 +72,9 @@ const utils = {
             nodeId += chapter + '_' + node
         }
 
-        let regexp = /kcjs_\d{1,2}/
+        let regexp = RegExp(prefixStr + "_\\d{1,2}")
         if (utils.getUrlParam('nodeId').split('_').length > 2) {
-            regexp = /kcjs_\d{1,2}_\d{1,2}/
+            regexp = RegExp(prefixStr + "_\\d{1,2}_\\d{1,2}")
         }
 
         return window.location.href.replace(regexp, nodeId)
@@ -107,8 +107,8 @@ const utils = {
         let periodId = utils.getUrlParam('periodId')
         let courseId = utils.getUrlParam('courseId')
         let nodeId   = utils.getUrlParam('nodeId')
-        let [, chapter] = nodeId.split('_')
-        let key  = `${planId}_${periodId}_${courseId}_kcjs_${chapter}`
+        let [prefixStr, chapter] = nodeId.split('_')
+        return `${planId}_${periodId}_${courseId}_${prefixStr}_${chapter}`
     },
 
     //判断是否继续尝试
