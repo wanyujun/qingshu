@@ -1,5 +1,4 @@
 # 青书学堂刷课
-参考了: https://github.com/768446472/qingshuxuetang-autoscript
 ## 使用方法
 
     1. 使用chrome或chrome内核浏览器
