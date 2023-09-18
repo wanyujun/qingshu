@@ -124,8 +124,8 @@ const utils = {
                 utils.notify("所有章节已经学习完毕，即将跳转到课程主页")
                 utils.goCoursePage()
             } else {
+                utils.doneNode(nodeId)
                 utils.notify("没有找到视频组件，即将跳转到下一章节")
-                window.alert("asdfasd")
                 utils.goNextNode()
             }
         }
@@ -145,7 +145,7 @@ const utils = {
     goNextNode() {
         let lastNodeId = utils.getLastNodeId()
         let currentNodeId = utils.getUrlParam('nodeId')
-        if (nodeIdsTodo && nodeIdsTodo.length > 0 && lastNodeId) {
+        if (lastNodeId) {
             window.location.href = window.location.href.replace(currentNodeId , lastNodeId)
         }
     },
@@ -223,6 +223,7 @@ const utils = {
 
     //弹出通知
     notify(content) {
+        console.log(content)
         GM_notification({
             title: '系统通知',
             text: content,
